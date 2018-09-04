@@ -11,17 +11,14 @@ import UIKit
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
   @IBOutlet weak var xxxTableview: UITableView!
   @IBOutlet weak var testLabel: UILabel!
-  
-  var label = UILabel()
+
+  var label = UIImageView()
   var initPoint = CGPoint()
   override func viewDidLoad() {
     super.viewDidLoad()
     // Do any additional setup after loading the view, typically from a nib.
     xxxTableview.delegate = self
     xxxTableview.dataSource = self
-    
-    label.isHidden = true
-    xxxTableview.addSubview(label)
 
     let gesture = UILongPressGestureRecognizer(target: self, action: #selector(self.longPress(_:)))
     gesture.minimumPressDuration = 0.3
@@ -59,21 +56,22 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     switch longP.state {
     case .began:
-
       let longPressView = longP.view as! UILabel
       let longPressViewPoint = longP.location(in: longPressView)
 
+      UIGraphicsBeginImageContextWithOptions(longPressView.bounds.size, false, 0)
+      longPressView.layer.render(in: UIGraphicsGetCurrentContext()!)
+      let img = UIGraphicsGetImageFromCurrentImageContext()
+      UIGraphicsEndImageContext()
+
+      label = UIImageView(image: img)
+      label.frame = CGRect(origin: CGPoint.zero, size: longPressView.bounds.size)
+
+      xxxTableview.addSubview(label)
+
       label.frame.size = CGSize(width: (longPressView.frame.width), height: (longPressView.frame.height))
       label.frame.origin = CGPoint(x: point.x - longPressViewPoint.x , y: point.y - longPressViewPoint.y)
-      label.text = longPressView.text
 
-      if longPressView.backgroundColor == nil {
-        label.backgroundColor = .clear
-      } else {
-        label.backgroundColor = longPressView.backgroundColor
-      }
-
-      label.isHidden = false
       initPoint = point
     case .changed:
 
@@ -85,80 +83,15 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
       initPoint = point
 
     case .ended:
-      label.isHidden = true
       let cells = xxxTableview.visibleCells.filter { (cell) -> Bool in
         print(cell.frame.origin.y)
         print(label.frame.origin.y)
         return cell.frame.origin.y < label.frame.origin.y && cell.frame.maxY > label.frame.origin.y
       }
-
-      let cell = cells.first
-
-
+      label.removeFromSuperview()
     default:
       break
     }
-  }
-
-  @objc func panFunc(_ pan: UIPanGestureRecognizer) {
-    //pan 事件觸發
-    var representation = UIView()
-
-
-    if pan.state == .began {
-
-      let point = pan.location(in: self.xxxTableview) //xxxTableview == pareantView
-      let panView = pan.view as! UILabel
-      let panViewPoint = pan.location(in: panView)
-
-
-
-//      representation.frame = view.convert(representation.frame, from: xxxTableview)
-//
-//      representation.alpha = 0.7
-//
-//      let pointOnCanvas = pan.location(in: xxxTableview)
-//
-//      let offset = CGPoint(x: pointOnCanvas.x - representation.frame.origin.x, y: pointOnCanvas.y - representation.frame.origin.y)
-//
-//      self.xxxTableview.addSubview(representation)
-
-
-      label.frame.size = CGSize(width: (panView.frame.width), height: (panView.frame.height))
-      label.frame.origin = CGPoint(x: point.x - panViewPoint.x , y: point.y - panViewPoint.y)
-      label.text = panView.text
-
-      if panView.backgroundColor == nil {
-        label.backgroundColor = .clear
-      } else {
-        label.backgroundColor = panView.backgroundColor
-      }
-
-      label.isHidden = false
-    }else if pan.state == .ended {
-      label.isHidden = true
-      let cells = xxxTableview.visibleCells.filter { (cell) -> Bool in
-        print(cell.frame.origin.y)
-        print(label.frame.origin.y)
-        return cell.frame.origin.y < label.frame.origin.y && cell.frame.maxY > label.frame.origin.y
-      }
-      
-      let cell = cells.first
-      
-//      print(xxxTableview.indexPath(for: cell!))
-    }else if pan.state == .changed {
-      let translation = pan.translation(in: self.xxxTableview)
-      label.center = CGPoint(x: label.center.x + translation.x, y: label.center.y + translation.y)
-      pan.setTranslation(CGPoint.zero, in: self.xxxTableview)
-
-//      let translation = pan.translation(in: self.xxxTableview)
-//      representation.center = CGPoint(x: representation.center.x + translation.x, y: representation.center.y + translation.y)
-//      pan.setTranslation(CGPoint.zero, in: self.xxxTableview)
-
-    }
-
-
-
   }
 }
 
