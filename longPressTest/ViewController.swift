@@ -10,20 +10,16 @@ import UIKit
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
   @IBOutlet weak var xxxTableview: UITableView!
-  @IBOutlet weak var testLabel: UILabel!
 
-  var label = UIImageView()
+  var tempImage = UIImageView()
   var initPoint = CGPoint()
+  var lastCell = UITableViewCell()
+  var moveTimer = Timer()
   override func viewDidLoad() {
     super.viewDidLoad()
     // Do any additional setup after loading the view, typically from a nib.
     xxxTableview.delegate = self
     xxxTableview.dataSource = self
-
-    let gesture = UILongPressGestureRecognizer(target: self, action: #selector(self.longPress(_:)))
-    gesture.minimumPressDuration = 0.3
-
-    testLabel.addGestureRecognizer(gesture)
 
   }
   
@@ -32,7 +28,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // Dispose of any resources that can be recreated.
   }
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return 2
+    return 15
   }
   
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -50,9 +46,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
   }
 
   @objc func longPress(_ longP: UILongPressGestureRecognizer) {
-    let point = longP.location(in: self.xxxTableview) //xxxTableview == pareantView
-
-
+    let tableViewPoint = longP.location(in: self.xxxTableview) //xxxTableview == pareantView
+    let viewPoint = longP.location(in: self.view)
 
     switch longP.state {
     case .began:
@@ -64,31 +59,89 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
       let img = UIGraphicsGetImageFromCurrentImageContext()
       UIGraphicsEndImageContext()
 
-      label = UIImageView(image: img)
-      label.frame = CGRect(origin: CGPoint.zero, size: longPressView.bounds.size)
+      tempImage = UIImageView(image: img)
+      tempImage.frame = CGRect(origin: CGPoint.zero, size: longPressView.bounds.size)
 
-      xxxTableview.addSubview(label)
+      self.view.addSubview(tempImage)
 
-      label.frame.size = CGSize(width: (longPressView.frame.width), height: (longPressView.frame.height))
-      label.frame.origin = CGPoint(x: point.x - longPressViewPoint.x , y: point.y - longPressViewPoint.y)
+      tempImage.frame.size = CGSize(width: (longPressView.frame.width), height: (longPressView.frame.height))
+      tempImage.frame.origin = CGPoint(x: viewPoint.x - longPressViewPoint.x , y: viewPoint.y - longPressViewPoint.y)
 
-      initPoint = point
+      initPoint = viewPoint
     case .changed:
+      let cells = xxxTableview.visibleCells.filter { (cell) -> Bool in
+        return cell.frame.origin.y < tableViewPoint.y && cell.frame.maxY > tableViewPoint.y
+      }
+      if cells.count > 0 {
+        let cell = cells.first
+        if lastCell != cell {
+          lastCell.layer.borderWidth = 0
+          lastCell = cell!
+        }
 
-      let vectorX = point.x - initPoint.x
-      let vectorY = point.y - initPoint.y
+        cell?.layer.borderWidth = 1
+        cell?.layer.borderColor = UIColor.black.cgColor
+      }
 
-      label.center = CGPoint(x: label.center.x + vectorX, y: label.center.y + vectorY)
+      let vectorX = viewPoint.x - initPoint.x
+      let vectorY = viewPoint.y - initPoint.y
 
-      initPoint = point
+      tempImage.center = CGPoint(x: tempImage.center.x + vectorX, y: tempImage.center.y + vectorY)
+
+      initPoint = viewPoint
+
+
+      let tableviewHeight = xxxTableview.frame.size.height
+      var tableviewInitOffset = xxxTableview.contentOffset.y
+      let tableviewContentHeight = xxxTableview.contentSize.height
+
+
+
+//      if tableviewOffset + 44 >= point.y {
+//        print("up")
+//      } else if tableviewOffset + tableviewHeight <= point.y {
+//        print("down")
+//      }
+
+      if (tableviewInitOffset + 44) + (tableviewHeight / 5) >= tableViewPoint.y {
+        print("up")
+        if !moveTimer.isValid {
+          moveTimer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true, block: { (timer) in
+            if self.xxxTableview.contentOffset.y - 5 <= -44 {
+              self.xxxTableview.contentOffset.y = -44
+            } else {
+              self.xxxTableview.contentOffset.y -= 5
+            }
+          })
+        }
+      } else if tableviewInitOffset + (tableviewHeight / 5 * 4) <= tableViewPoint.y {
+        print("down")
+        if !moveTimer.isValid {
+          moveTimer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true, block: { (timer) in
+            if self.xxxTableview.contentOffset.y + 5 >= tableviewContentHeight - self.xxxTableview.frame.height {
+              self.xxxTableview.contentOffset.y = tableviewContentHeight - self.xxxTableview.frame.height
+            } else {
+              self.xxxTableview.contentOffset.y += 5
+            }
+          })
+        }
+      } else {
+        moveTimer.invalidate()
+      }
+
 
     case .ended:
+      moveTimer.invalidate()
+
       let cells = xxxTableview.visibleCells.filter { (cell) -> Bool in
-        print(cell.frame.origin.y)
-        print(label.frame.origin.y)
-        return cell.frame.origin.y < label.frame.origin.y && cell.frame.maxY > label.frame.origin.y
+        return cell.frame.origin.y < tempImage.frame.origin.y && cell.frame.maxY > tempImage.frame.origin.y
       }
-      label.removeFromSuperview()
+
+      if cells.count > 0 {
+        let cell = cells.first
+        lastCell.layer.borderWidth = 0
+      }
+      tempImage.removeFromSuperview()
     default:
       break
     }

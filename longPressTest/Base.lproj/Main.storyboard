@@ -51,18 +51,10 @@
                                     </tableViewCell>
                                 </prototypes>
                             </tableView>
-                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rCq-v5-bfT">
-                                <rect key="frame" x="166" y="323" width="42" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="rCq-v5-bfT" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="CPI-pl-adx"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="thX-Yw-tij" secondAttribute="bottom" id="E5S-y4-wI5"/>
-                            <constraint firstItem="rCq-v5-bfT" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="PX6-Vx-g77"/>
                             <constraint firstItem="thX-Yw-tij" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="bUX-6P-Zkj"/>
                             <constraint firstItem="thX-Yw-tij" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="q9Y-ig-3vp"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="thX-Yw-tij" secondAttribute="trailing" id="rba-zT-Y0g"/>
@@ -70,7 +62,6 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
-                        <outlet property="testLabel" destination="rCq-v5-bfT" id="yPv-I9-Ecu"/>
                         <outlet property="xxxTableview" destination="thX-Yw-tij" id="htj-Bb-Gvk"/>
                     </connections>
                 </viewController>
